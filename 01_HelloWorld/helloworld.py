@@ -32,6 +32,7 @@ test_function_01(1)
 # 변수 활용시 주의할 것~!!
 def test_copy_01():
     origin_list = [0, 1, 2, 3, 4, 5]
+    # 사실 이렇게 list 선언 안해도 되긴 함.
     copy_list = list()
     copy_list = origin_list
     copy_list.remove(2)
