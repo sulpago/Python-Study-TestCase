@@ -1,6 +1,9 @@
 import datetime
 from random import randint
+from multiprocessing import Process
+from multiprocessing import freeze_support
 from T03_Thread_Process.lib.sample_threading import SampleThreadA
+from T03_Thread_Process.lib.sample_process import SampleProcess
 
 
 class StopWatcher(object):
@@ -49,7 +52,7 @@ def thread_run(size_of_run, run_thread_num):
     # Thread를 세팅하고, thrading josb 리스트에 각 job을 할당하자.
     for idx_thread in range(0, run_thread_num):
         cached_thread = SampleThreadA("Th" + str(idx_thread))
-        if idx_thread == (0):
+        if idx_thread == 0:
             # 첫번째 쓰레드에 나머지 몰아주자.
             first_thread_burden = size_of_run - (each_run_for_thread * (run_thread_num - 1))
             cached_thread.set_make_list_size(first_thread_burden)
@@ -72,10 +75,42 @@ def thread_run(size_of_run, run_thread_num):
     watcher.stop()
 
 
+def process_run(size_of_run, run_process_num):
+    watcher = StopWatcher()
+    watcher.start()
+
+    each_run_for_process = size_of_run // run_process_num
+
+    process_jobs = []
+
+    for idx_process in range(0, run_process_num):
+        temp_process_name = "PID_" + str(idx_process)
+        if idx_process == 0:
+            first_process_burden = size_of_run - (each_run_for_process * (run_process_num - 1))
+            cached_process = Process(target=SampleProcess, args=(temp_process_name, first_process_burden))
+        else:
+            cached_process = Process(target=SampleProcess, args=(temp_process_name, each_run_for_process))
+        process_jobs.append(cached_process)
+
+    # 각 리스트에 할당된 프로세스 실행!
+    print("Run Process")
+    for process_worker in process_jobs:
+        process_worker.start()
+
+    # 결과값 기다리자.
+    print("Wait for Process job done")
+    for process_worker in process_jobs:
+        process_worker.join()
+
+    watcher.stop()
+
 def run_benck_mark():
     run_epoch = 10000000
     just_run(run_epoch)
-    thread_run(run_epoch, 8)
+    # thread_run(run_epoch, 2)
+    process_run(run_epoch, 4)
 
-
-run_benck_mark()
+# 윈도우 에서는 꼭!!!  freeze_support를 호출해야 한다.
+if __name__ == '__main__':
+    freeze_support()
+    run_benck_mark()
